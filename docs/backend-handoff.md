@@ -1,27 +1,11 @@
-# 后端交付与前端接入
+# 前后端接入说明
 
-后端负责人：832401304 陈颀桢。已按 [接口契约](api.md) 实现全部十个接口。启动命令、数据库与测试见 [后端 README](../backend/README.md)。
+蔡奇真负责前端，陈颀桢负责后端。后端 PR #1 已合并，前端 PR #2 的真实接口联调在此版本完成。两端使用 [接口契约](api.md)，不使用独立虚构接口替代正式联调。
 
-## 前端同学接入顺序
+开发时启动后端 8000 和 Vite 5173，保持 VITE_PREVIEW_MODE=false、API_PROXY_TARGET=http://127.0.0.1:8000。生产时构建 frontend/dist，由后端同一端口提供网页与 /api；云端用 Nginx 代理到后端。
 
-1. 拉取 backend 分支或在 PR 评审后合入 main，运行后端健康检查和 `/docs`。
-2. 前端保持 `VITE_DEMO_MODE=false`，代理目标 http://127.0.0.1:8000，不移除 `/api`。
-3. 用现有 contactsApi.create/update 接新增编辑表单，一人可动态增加同类型方式。提交前删除未填写的方式行。
-4. 用 contactsApi.favorite(id, true/false) 接收藏切换；失败时保留原状态，收藏页取消成功后移除条目。
-5. 下载模板、导出分别调用 contactsApi.download('template'/'export')。上传调用 contactsApi.import(file)。
-6. 导入前提示：只支持 .xlsx、最大 5 MB，新增模式会重复添加；失败时展示 error.rows 中的 row、column、reason。所有行均有效才写入。
-7. 保存成功后重新查询列表；验证服务器断开、404、默认 422 数组和 Excel 422 detail 对象的提示。
+联系人请求 name、isFavorite、methods，方式 type 是 phone/email/social/address，同类型允许多条，号码为字符串。PUT 整体替换方式，收藏 PATCH 提交明确布尔值。所有写操作以正式接口响应为准，失败保留输入并展示错误。
 
-## 数据规则
+Excel 固定 Contacts 和六个中文表头，JSON 字符串数组保存多值。label 不参与 v1 往返；导入新增、允许同名，重复上传会重复新增。任一行错误整批不写入，前端展示行号、列名和原因。
 
-name 必填去空格；isFavorite 必须布尔值；methods 可为空。方式 type 为 phone/email/social/address，label 默认空字符串，value 非空字符串，国际号码和前导零原样保留。PUT 整体替换 methods，不是追加。
-
-Excel 固定工作表 Contacts 和六列，见 [样例](../samples/README.md)。label 不导出、导入后为空，方式 value 全部保留。静态路由先注册，不会把 export/template 当作 id。
-
-## 验收状态
-
-后端自动化和真实 HTTP 重启验证结果见 [测试报告](test-report.md)。前端现有查询页面已能对接后端；新增编辑、收藏切换、导入导出等操作仍需完成界面与完整人工验收。
-
-待双方实际操作：网页新增两部电话与邮箱 → 编辑 → 收藏与取消 → 导出并在 Excel 打开 → 导入空库 → 刷新及重启服务 → 错误文件提示。不得将接口测试写成已通过完整网页操作。
-
-后端变更提交到 backend，通过 PR 评审进入 main。最终发布、完整视频、两篇个人博客和 PSP 仍按实际完成情况记录。
+自动化、浏览器实际流程和重启验证见 [整体验收](integration-report.md)。公网部署步骤见 [部署说明](deployment.md)。最终完整视频、两篇个人博客、两人 PSP 与实际贡献比例仍须本人补充和提交。

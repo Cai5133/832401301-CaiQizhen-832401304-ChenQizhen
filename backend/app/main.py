@@ -7,6 +7,7 @@ from pathlib import Path
 from fastapi import FastAPI, File, HTTPException, Query, Request, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 
 from .database import Database, default_database_path
@@ -16,7 +17,7 @@ from .services import contacts, excel
 logger = logging.getLogger(__name__)
 
 
-def create_app(database_path: str | Path | None = None) -> FastAPI:
+def create_app(database_path: str | Path | None = None, frontend_path: str | Path | None = None) -> FastAPI:
     database = Database(database_path if database_path is not None else default_database_path())
 
     @asynccontextmanager
@@ -88,6 +89,12 @@ def create_app(database_path: str | Path | None = None) -> FastAPI:
     def contact_delete(contact_id: int):
         contacts.delete_contact(database, contact_id)
         return Response(status_code=204)
+
+    # Register the frontend last so API routes keep precedence.
+    dist = Path(frontend_path) if frontend_path is not None else Path(
+        os.getenv("FRONTEND_DIST", str(Path(__file__).resolve().parents[2] / "frontend" / "dist")))
+    if (dist / "index.html").is_file():
+        application.mount("/", StaticFiles(directory=dist, html=True), name="frontend")
 
     return application
 
