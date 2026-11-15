@@ -1,61 +1,65 @@
 # 832401301蔡奇真832401304陈颀桢
 
-软件工程结对编程通讯录项目。蔡奇真（832401301）负责前端；陈颀桢（832401304）负责后端。
+软件工程结对编程通讯录。蔡奇真（832401301）负责 Vue 前端；陈颀桢（832401304）负责 FastAPI、SQLite 和 Excel 后端。
 
-[作业要求](https://bbs.csdn.net/topics/620593436) · [课程社区](https://bbs.csdn.net/forums/2601_MU_SE_FZU)
+[作业要求](https://bbs.csdn.net/topics/620593436) · [课程社区](https://bbs.csdn.net/forums/2601_MU_SE_FZU) · [代码规范](docs/code-style.md) · [分工](docs/division.md)
 
 截止时间：2026 年 11 月 17 日 23:59，北京时间。
 
-## 当前版本
+## 功能
 
-这是**前端交付版本**，最新代码在 `frontend` 分支。已完成联系人列表与详情、全部方式内容搜索、动态多方式新增和编辑、收藏与取消、删除确认、Excel 模板下载与导入导出界面、导入行错误展示，以及桌面和窄屏布局。
+联系人新增、编辑、详情与删除；一人多种及同类型多条联系方式；收藏和快速筛选；按姓名或任意方式内容搜索；真正 .xlsx 模板下载、导入、导出与错误行提示。收藏和联系方式写入 SQLite，进程重启后保留。导入先校验整批，任何一行失败均不写入。
 
-页面通过集中客户端调用约定的真实 HTTP 接口。已使用本机虚构数据接口检查交互，仍需连接陈颀桢的正式后端验证数据库持久化、导入回滚和最终端到端流程。正式后端尚未开发，完整系统与公网部署待双方联调后交付。
+前后端都调用真实接口，不在请求失败时替换为虚构数据。VITE_PREVIEW_MODE 仅控制界面标记，不替换请求。界面视觉参考与许可见 [设计参考](docs/design-references.md)。
 
-后端未启动时页面明确报错，不自动替换成假数据。VITE_PREVIEW_MODE 仅控制“本地演示”标记，不会替换请求或生成联系人。
+## 开发运行
 
-## 运行前端
+Python 3.12、Node.js 20.19+ 或 22.12+，使用现有 pnpm 锁文件。
 
-需要 Node.js 20.19+ 或 22.12+，建议当前 LTS；使用 pnpm 锁文件。
+```bash
+cd backend
+python -m venv .venv
+# macOS / Linux
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
 
-```powershell
-git clone https://github.com/Cai5133/832401301-CaiQizhen-832401304-ChenQizhen.git
-cd 832401301-CaiQizhen-832401304-ChenQizhen
-git switch frontend
+Windows 把 `.venv/bin/python` 换为 `.venv\Scripts\python.exe`。首次启动自动创建固定位置的数据库，详见 [后端说明](backend/README.md)。健康检查 http://127.0.0.1:8000/api/health ，接口文档 http://127.0.0.1:8000/docs 。
+
+另开终端运行前端：
+
+```bash
 cd frontend
 pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-访问 http://127.0.0.1:5173 。未安装 pnpm 时可执行 `npm install --global pnpm`。也能用 `npm install` 和 `npm run dev` 本地运行；团队提交以现有 pnpm 锁文件为准，不混入第二份锁文件。
+打开 http://127.0.0.1:5173 。API_PROXY_TARGET 默认 http://127.0.0.1:8000，保留 /api。VITE_PREVIEW_MODE 保持 false，空数据库会显示空列表。初始化、独立演示库和虚构数据见后端说明。
 
-本机审阅时提供了单独的本地虚构数据服务，不属于正式后端。访问正在运行的 http://127.0.0.1:5173 可体验页面；服务停止后需要重新启动。该演示服务不随前端源码发布，也不替代后端同学的实现。
+## 生产运行与云部署
 
-正式联调时复制 `frontend/.env.example` 为 `frontend/.env.local`，保持 `VITE_PREVIEW_MODE=false`，`API_PROXY_TARGET` 默认为 `http://127.0.0.1:8000`。两台电脑联调时改为后端同学局域网 IP，后端监听 `0.0.0.0:8000`。修改环境配置后重启前端；开发代理保留 `/api` 前缀。
+先在 frontend 执行 `pnpm build`，后端会同时提供构建后的网页和 /api。单个地址即可访问完整系统，不需要启动 Vite 开发服务。
 
-构建：在 frontend 执行 `pnpm build`；预览：`pnpm preview`。dist 不提交。部署时由站点反向代理 `/api`，Vite 开发代理不会进入构建文件。
+阿里云或腾讯云 Ubuntu 服务器的安装、systemd 自启、Nginx、持久化与备份步骤见 [云部署说明](docs/deployment.md)。实际公网地址与验收结果需在服务器部署成功后填写，不能将本地地址称为云部署。
 
-自动检查：在 frontend 执行 `pnpm test`，当前 15 项测试通过。已在不含 node_modules 的隔离副本中按锁文件重新安装并成功构建。具体检查与限制见 [验证记录](docs/verification.md) 与 [前端验收对照表](docs/frontend-acceptance.md)。
+## 验证
 
-界面采用浅紫、薄荷青、奶油金配色和电话本插画的浅色布局，视觉参考与开源许可见 [界面参考说明](docs/design-references.md)。参考范围仅为界面，通讯录功能、接口与作业要求保持一致。
-
-## 目录与分支
-
-```text
-frontend/    蔡奇真的 Vue 前端工程
-backend/     陈颀桢的后端工程
-docs/        接口 规范 分工 交接与进度
-samples/     Excel 格式约定与后续虚构样例
+```bash
+# frontend
+pnpm test
+pnpm build
+# backend，使用虚拟环境中的 python
+python -m pip install -r requirements-dev.lock.txt
+python -m pytest -q
+python scripts/smoke_http.py
 ```
 
-只使用 `main`、`frontend`、`backend` 分支。两人使用本人 Git 身份提交，通过 PR 评审合并 main。
+[后端报告](docs/test-report.md) · [前端验收](docs/frontend-acceptance.md) · [整体验收](docs/integration-report.md) · [接口契约](docs/api.md) · [Excel 格式和样例](samples/README.md)
 
-后端先读 [接手清单](docs/backend-handoff.md)、[接口契约](docs/api.md) 与 [Excel 格式](samples/README.md)。前端下一步见 [任务进度](docs/frontend-progress.md)。[代码规范](docs/code-style.md) 与 [分工](docs/division.md) 供双方共同遵守。
+## 目录与交付
 
-仓库公开，助教可以直接阅读。队友若需直接推送，由所有者在 Settings → Collaborators 邀请其 GitHub 用户名；也可 Fork 后提交 PR。
+frontend 为页面、backend 为后端与测试、samples 为虚构 Excel 样例、deploy 为生产部署配置、docs 为规范及证据。使用 main、frontend、backend 分支，保留个人真实提交历史，不强推覆盖他人改动。
 
-## 最终作业
+后端 PR #1 已合并。前端 PR #2 与后端共同联调后合入 main。最终公网部署、完整演示视频、两人的个人博客与实际 PSP、贡献比例和课程提交记录按真实进度补齐。博客技术草稿见 [backend-blog.md](docs/backend-blog.md)。
 
-完成后仍需发布版本、发起 PR、上传文档、录制完整视频。两人各自发布个人 CSDN 博客，每篇包含两人的 PSP 表、提交记录与数量、分工、贡献比例和实际问题解决过程，再在原帖底部“提交任务”中各自提交本人博客链接。当前交接不是最终完成。
-
-本仓库按两人决定直接新建。若课程后续明确指定上游仓库，应按助教要求接入指定 Fork，不将新建仓库称为已完成 Fork。
+原帖要求 Fork，但未附明确课程上游地址；如有另行指定仓库，应按助教要求接入。项目在创建时为独立团队仓库，不声称已经 Fork 了未确认的课程上游。
