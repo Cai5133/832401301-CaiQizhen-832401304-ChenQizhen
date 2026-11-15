@@ -60,6 +60,6 @@ python scripts/smoke_http.py
 
 frontend 为页面、backend 为后端与测试、samples 为虚构 Excel 样例、deploy 为生产部署配置、docs 为规范及证据。使用 main、frontend、backend 分支，保留个人真实提交历史，不强推覆盖他人改动。
 
-后端 PR #1 已合并。前端 PR #2 与后端共同联调后合入 main。最终公网部署、完整演示视频、两人的个人博客与实际 PSP、贡献比例和课程提交记录按真实进度补齐。博客技术草稿见 [backend-blog.md](docs/backend-blog.md)。
+后端 PR #1、前端及整合 PR #2 均已合并到 main，保留双方提交历史。最终公网部署、完整演示视频、两人的个人博客与实际 PSP、贡献比例和课程提交记录按真实进度补齐。博客技术草稿见 [backend-blog.md](docs/backend-blog.md)。
 
 原帖要求 Fork，但未附明确课程上游地址；如有另行指定仓库，应按助教要求接入。项目在创建时为独立团队仓库，不声称已经 Fork 了未确认的课程上游。
