@@ -1,39 +1,27 @@
-# 给陈颀桢的后端接手清单
+# 后端交付与前端接入
 
-蔡奇真负责前端，陈颀桢负责后端。当前前端是交接骨架，后端还没有实现。
+后端负责人：832401304 陈颀桢。已按 [接口契约](api.md) 实现全部十个接口。启动命令、数据库与测试见 [后端 README](../backend/README.md)。
 
-## 1 取得代码
+## 前端同学接入顺序
 
-```powershell
-git clone https://github.com/Cai5133/832401301-CaiQizhen-832401304-ChenQizhen.git
-cd 832401301-CaiQizhen-832401304-ChenQizhen
-git switch backend
-```
+1. 拉取 backend 分支或在 PR 评审后合入 main，运行后端健康检查和 `/docs`。
+2. 前端保持 `VITE_DEMO_MODE=false`，代理目标 http://127.0.0.1:8000，不移除 `/api`。
+3. 用现有 contactsApi.create/update 接新增编辑表单，一人可动态增加同类型方式。提交前删除未填写的方式行。
+4. 用 contactsApi.favorite(id, true/false) 接收藏切换；失败时保留原状态，收藏页取消成功后移除条目。
+5. 下载模板、导出分别调用 contactsApi.download('template'/'export')。上传调用 contactsApi.import(file)。
+6. 导入前提示：只支持 .xlsx、最大 5 MB，新增模式会重复添加；失败时展示 error.rows 中的 row、column、reason。所有行均有效才写入。
+7. 保存成功后重新查询列表；验证服务器断开、404、默认 422 数组和 Excel 422 detail 对象的提示。
 
-设置本人的 Git 作者姓名和可关联本人 GitHub 的邮箱。没有推送权限时，把自己的 GitHub 用户名发给蔡奇真，由所有者添加协作者；或 Fork 后提 PR。
+## 数据规则
 
-## 2 先打通查询
+name 必填去空格；isFavorite 必须布尔值；methods 可为空。方式 type 为 phone/email/social/address，label 默认空字符串，value 非空字符串，国际号码和前导零原样保留。PUT 整体替换 methods，不是追加。
 
-1. 在 backend 目录实现服务。建议 FastAPI + SQLite + openpyxl，也可用自己熟悉的框架，但接口必须一致。
-2. 默认 8000 端口，`GET /api/health` 返回 `{"status":"ok"}`。
-3. `GET /api/contacts` 先返回 `{"items":[],"total":0}`，让前端看到空列表。
-4. 再加入虚构联系人，确认前端能显示所有联系方式。
-5. 把依赖、初始化步骤、启动命令和地址写进 backend/README.md，发送给前端同学。
+Excel 固定工作表 Contacts 和六列，见 [样例](../samples/README.md)。label 不导出、导入后为空，方式 value 全部保留。静态路由先注册，不会把 export/template 当作 id。
 
-## 3 做数据和收藏
+## 验收状态
 
-按 docs/api.md 建联系人和联系方式两张表。一人可以有多种方式，也可以有两部电话。电话号码按字符串保存；收藏要写入数据库，服务重启不丢。新增、编辑、删除和导入用事务，不留下部分数据。实现查询、详情、POST、PUT、DELETE、收藏 PATCH、q 搜索和 favorite 筛选。
+后端自动化和真实 HTTP 重启验证结果见 [测试报告](test-report.md)。前端现有查询页面已能对接后端；新增编辑、收藏切换、导入导出等操作仍需完成界面与完整人工验收。
 
-## 4 做 Excel
+待双方实际操作：网页新增两部电话与邮箱 → 编辑 → 收藏与取消 → 导出并在 Excel 打开 → 导入空库 → 刷新及重启服务 → 错误文件提示。不得将接口测试写成已通过完整网页操作。
 
-按 samples/README.md 的 Contacts 工作表和中文表头实现模板、导出与导入。一人一行，多值使用 JSON 字符串数组。上传字段为 file，只收 .xlsx，建议上限 5 MB、5000 条。先验证整批，再写入；一行失败整批回滚，返回行号、列名和原因。新增模式允许同名，重复上传会再次新增。
-
-后端负责提供真实模板、正常与异常 Excel 样例。所有数据虚构，不放真实同学联系方式。
-
-## 5 联调与交付
-
-提供：源码、依赖版本、初始化或迁移方式、启动命令、服务地址、Excel 样例和真实测试结果。前端在 .env.local 修改 API_PROXY_TARGET；不要取消 /api 前缀。
-
-共同验收：网页新增联系人 → 两部电话及邮箱 → 编辑 → 收藏及取消 → Excel 导出打开 → 导入空测试库 → 重启后数据还在。再检查错误导入与服务断开提示。
-
-每完成一项真实功能提交一次，推送 backend，发 PR 到 main。不要提交 .venv、密钥、真实联系人或临时数据库。
+后端变更提交到 backend，通过 PR 评审进入 main。最终发布、完整视频、两篇个人博客和 PSP 仍按实际完成情况记录。
