@@ -83,3 +83,11 @@ test('English UI localizes server errors while preserving row metadata', async t
   t.mock.method(globalThis, 'fetch', async () => Response.json({ detail: { message: '导入失败，未写入数据', errors: [{ row: 4, column: '电话', reason: '格式错误' }] } }, { status: 422 }))
   await assert.rejects(() => request('/contacts/import'), error => error.message === 'Import failed. No contacts were saved.' && error.rows[0].column === '电话' && error.rows[0].row === 4)
 })
+
+// An exported/imported contact must remain editable at the API limits.
+test('accepts API-sized labels and values and rejects too many methods', () => {
+  const valid = validateContact({ name: '边界测试', methods: [{ type: 'address', label: '标'.repeat(100), value: '字'.repeat(2000) }] })
+  assert.deepEqual(valid.errors, {})
+  const invalid = validateContact({ name: '过多方式', methods: Array.from({length: 101}, () => phone('123')) })
+  assert.ok(invalid.errors.name)
+})

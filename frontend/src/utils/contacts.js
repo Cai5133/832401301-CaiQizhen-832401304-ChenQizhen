@@ -16,12 +16,13 @@ export function validateContact(draft) {
     const label = method.label.trim()
     if (!value && !label) return // Ignore new rows that are still empty.
     if (!value) errors[index] = 'Enter a value or remove this row.'
-    else if (value.length > 1000) errors[index] = 'Use 1,000 characters or fewer for the value.'
+    else if (value.length > 2000) errors[index] = 'Use 2,000 characters or fewer for the value.'
     else if (!methodTypes.some(item => item.value === method.type)) errors[index] = 'Choose a valid contact method.'
     else if (method.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) errors[index] = 'Enter a valid email, such as name@example.com.'
-    if (label.length > 50) errors[index] = 'Use 50 characters or fewer for the label.'
+    if (label.length > 100) errors[index] = 'Use 100 characters or fewer for the label.'
     methods.push({ type: method.type, label, value })
   })
+  if (methods.length > 100) errors.name = 'Use no more than 100 contact methods.'
   return { errors, payload: { name, isFavorite: Boolean(draft.isFavorite), methods } }
 }
 

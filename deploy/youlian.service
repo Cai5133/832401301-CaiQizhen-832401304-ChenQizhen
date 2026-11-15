@@ -1,0 +1,23 @@
+[Unit]
+Description=Youlian contact directory
+After=network.target
+
+[Service]
+Type=simple
+User=youlian
+Group=youlian
+WorkingDirectory=/opt/youlian/current/backend
+EnvironmentFile=/etc/youlian.env
+ExecStart=/opt/youlian/current/backend/.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips=127.0.0.1
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/youlian
+
+[Install]
+WantedBy=multi-user.target
