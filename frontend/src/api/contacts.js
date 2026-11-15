@@ -1,23 +1,26 @@
+import { displayMessage } from '../utils/messages.js'
 const BASE = '/api'
 
-function explain(detail) {
-  if (typeof detail === 'string') return detail
-  if (Array.isArray(detail)) return detail.map(item => item.msg || '字段格式错误').join('；')
-  return detail?.message || '请求失败，请稍后重试'
+export function explain(detail) {
+  if (typeof detail === 'string') return displayMessage(detail)
+  if (Array.isArray(detail)) return detail.map(item => [item.loc?.slice(1).join(' / '), displayMessage(item.msg, 'Invalid field value')].filter(Boolean).join(': ')).join('; ')
+  return displayMessage(detail?.message, 'The request failed. Please try again.')
 }
 
 export async function request(path, options = {}) {
   let response
   try {
-    response = await fetch(`${BASE}${path}`, options)
-  } catch {
-    throw new Error('无法连接服务，请检查后端是否启动')
+    response = await fetch(`${BASE}${path}`, { ...options, signal: options.signal || AbortSignal.timeout(30000) })
+  } catch (cause) {
+    if (cause.name === 'AbortError' && options.signal?.aborted) throw cause
+    const writing = options.method && !['GET', 'HEAD'].includes(options.method)
+    throw new Error(writing ? 'The connection was interrupted or timed out. Your changes may have been saved. Refresh the list before submitting again.' : 'The server could not be reached or timed out. Check the connection and try again.')
   }
   if (!response.ok) {
     const body = await response.json().catch(() => ({}))
-    const error = new Error(explain(body.detail))
+    const error = new Error(explain(body.detail || body.message || (response.status >= 500 ? 'The service is temporarily unavailable. Please try again later.' : `Request failed (${response.status})`)))
     error.status = response.status
-    error.rows = body.detail?.errors || []
+    error.rows = Array.isArray(body.detail?.errors) ? body.detail.errors : []
     throw error
   }
   if (response.status === 204) return null
@@ -30,7 +33,8 @@ async function json(path, method, body) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  return response ? response.json() : null
+  if (!response) return null
+  try { return await response.json() } catch { throw new Error('Invalid server response. Your changes may have been saved. Refresh the list before submitting again.') }
 }
 
 export const contactsApi = {
@@ -39,7 +43,7 @@ export const contactsApi = {
     if (q.trim()) params.set('q', q.trim())
     if (favorite) params.set('favorite', 'true')
     const response = await request(`/contacts${params.size ? `?${params}` : ''}`, { signal })
-    return response.json()
+    try { return await response.json() } catch { throw new Error('The server returned an invalid contact response. Please check the API.') }
   },
   async get(id) { return (await request(`/contacts/${encodeURIComponent(id)}`)).json() },
   create: contact => json('/contacts', 'POST', contact),
@@ -49,12 +53,18 @@ export const contactsApi = {
   async import(file) {
     const body = new FormData()
     body.append('file', file)
-    return (await request('/contacts/import', { method: 'POST', body })).json()
+    const response = await request('/contacts/import', { method: 'POST', body })
+    try { return await response.json() } catch { throw new Error('Invalid import response. Refresh the list before importing again.') }
   },
   async download(kind = 'export') {
-    if (!['export', 'template'].includes(kind)) throw new Error('未知下载类型')
+    if (!['export', 'template'].includes(kind)) throw new Error('Unknown download type')
     const response = await request(`/contacts/${kind}`)
-    const url = URL.createObjectURL(await response.blob())
+    const blob = await response.blob()
+    const signature = new Uint8Array(await blob.slice(0, 4).arrayBuffer())
+    if (signature[0] !== 0x50 || signature[1] !== 0x4b || signature[2] !== 0x03 || signature[3] !== 0x04) {
+      throw new Error('The server did not return a valid Excel file. Please check the download API.')
+    }
+    const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
     a.download = kind === 'template' ? 'contacts-template.xlsx' : 'contacts.xlsx'

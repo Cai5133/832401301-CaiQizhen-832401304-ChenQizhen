@@ -8,11 +8,11 @@
 
 ## 当前版本
 
-这是**仓库建立与前后端交接版本**。已准备 Vue 前端骨架、联系人列表与详情、搜索和只看收藏、真实查询 API 调用、只读样例预览、接口客户端及共同开发说明。
+这是**前端交付版本**，最新代码在 `frontend` 分支。已完成联系人列表与详情、全部方式内容搜索、动态多方式新增和编辑、收藏与取消、删除确认、Excel 模板下载与导入导出界面、导入行错误展示，以及桌面和窄屏布局。
 
-尚未完成：新增与编辑表单、收藏状态修改、Excel 上传下载界面、后端服务、持久化和端到端联调。接口客户端已预留请求方法，仍需开发对应界面并验证。
+页面通过集中客户端调用约定的真实 HTTP 接口。已使用本机虚构数据接口检查交互，仍需连接陈颀桢的正式后端验证数据库持久化、导入回滚和最终端到端流程。正式后端尚未开发，完整系统与公网部署待双方联调后交付。
 
-样例模式默认关闭。后端未启动时页面明确报错，不自动替换成假数据。
+后端未启动时页面明确报错，不自动替换成假数据。VITE_PREVIEW_MODE 仅控制“本地演示”标记，不会替换请求或生成联系人。
 
 ## 运行前端
 
@@ -21,6 +21,7 @@
 ```powershell
 git clone https://github.com/Cai5133/832401301-CaiQizhen-832401304-ChenQizhen.git
 cd 832401301-CaiQizhen-832401304-ChenQizhen
+git switch frontend
 cd frontend
 pnpm install --frozen-lockfile
 pnpm dev
@@ -28,11 +29,15 @@ pnpm dev
 
 访问 http://127.0.0.1:5173 。未安装 pnpm 时可执行 `npm install --global pnpm`。也能用 `npm install` 和 `npm run dev` 本地运行；团队提交以现有 pnpm 锁文件为准，不混入第二份锁文件。
 
-后端未完成时：复制 `frontend/.env.example` 为 `frontend/.env.local`，将 `VITE_DEMO_MODE` 改为 `true`，重启前端，查看明确标注的**只读虚构样例**。
+本机审阅时提供了单独的本地虚构数据服务，不属于正式后端。访问正在运行的 http://127.0.0.1:5173 可体验页面；服务停止后需要重新启动。该演示服务不随前端源码发布，也不替代后端同学的实现。
 
-联调时将其设回 `false`，`API_PROXY_TARGET` 默认为 `http://127.0.0.1:8000`。两台电脑联调时改为后端同学局域网 IP，后端监听 `0.0.0.0:8000`。开发代理保留 `/api` 前缀。
+正式联调时复制 `frontend/.env.example` 为 `frontend/.env.local`，保持 `VITE_PREVIEW_MODE=false`，`API_PROXY_TARGET` 默认为 `http://127.0.0.1:8000`。两台电脑联调时改为后端同学局域网 IP，后端监听 `0.0.0.0:8000`。修改环境配置后重启前端；开发代理保留 `/api` 前缀。
 
 构建：在 frontend 执行 `pnpm build`；预览：`pnpm preview`。dist 不提交。部署时由站点反向代理 `/api`，Vite 开发代理不会进入构建文件。
+
+自动检查：在 frontend 执行 `pnpm test`，当前 15 项测试通过。已在不含 node_modules 的隔离副本中按锁文件重新安装并成功构建。具体检查与限制见 [验证记录](docs/verification.md) 与 [前端验收对照表](docs/frontend-acceptance.md)。
+
+界面采用浅紫、薄荷青、奶油金配色和电话本插画的浅色布局，视觉参考与开源许可见 [界面参考说明](docs/design-references.md)。参考范围仅为界面，通讯录功能、接口与作业要求保持一致。
 
 ## 目录与分支
 
