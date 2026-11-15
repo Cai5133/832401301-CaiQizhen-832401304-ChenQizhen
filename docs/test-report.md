@@ -57,6 +57,10 @@ python scripts/smoke_http.py
 - [390px 窄屏](evidence/query-mobile.png)
 - [后端 API 文档](evidence/backend-api.png)
 
+## 全新环境复现
+
+将提交源码导出至全新目录，用 Python 3.12 创建全新虚拟环境，严格按 requirements-dev.lock.txt 安装。再次执行 pytest：40 passed；再次执行 scripts/smoke_http.py：全部通过。验证没有依赖开发目录的虚拟环境、数据库或未提交文件。
+
 ## 待双方完成
 
 前端新增编辑、收藏切换、Excel 上传下载界面及全流程网页验收；人工使用 Excel/兼容软件打开导出文件；最终完整演示视频、代码互审、最终 Release、两篇个人博客和真实 PSP。可选云部署未执行。
