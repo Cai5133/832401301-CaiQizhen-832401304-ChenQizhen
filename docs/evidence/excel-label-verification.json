@@ -1,0 +1,55 @@
+{
+  "result": "passed",
+  "original": {
+    "name": "Excel Label Roundtrip Demo",
+    "isFavorite": false,
+    "methods": [
+      {
+        "type": "phone",
+        "label": "Personal",
+        "value": "0013800000000"
+      },
+      {
+        "type": "phone",
+        "label": "Work",
+        "value": "+44 20 0000 ext.9"
+      },
+      {
+        "type": "email",
+        "label": "School",
+        "value": "demo@example.com"
+      }
+    ],
+    "id": 22
+  },
+  "restored": {
+    "name": "Excel Label Roundtrip Demo",
+    "isFavorite": false,
+    "methods": [
+      {
+        "type": "phone",
+        "label": "Personal",
+        "value": "0013800000000"
+      },
+      {
+        "type": "phone",
+        "label": "Work",
+        "value": "+44 20 0000 ext.9"
+      },
+      {
+        "type": "email",
+        "label": "School",
+        "value": "demo@example.com"
+      }
+    ],
+    "id": 23
+  },
+  "fields": [
+    "name",
+    "isFavorite",
+    "methods.type",
+    "methods.label",
+    "methods.value"
+  ],
+  "existingContactsPreserved": true
+}

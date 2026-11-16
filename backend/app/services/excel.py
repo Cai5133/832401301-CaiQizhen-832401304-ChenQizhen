@@ -1,4 +1,4 @@
-"""Excel v1: one contact per row, JSON arrays for each method type."""
+"""Excel: one contact per row, categorized arrays preserving method labels."""
 import json
 from io import BytesIO
 from zipfile import ZipFile
@@ -39,7 +39,9 @@ def build_workbook(items):
     for row_number, contact in enumerate(items, start=2):
         values = [contact["name"], int(contact["isFavorite"])]
         for method_type in TYPES:
-            values.append(json.dumps([method["value"] for method in contact["methods"]
+            values.append(json.dumps([{"label": method.get("label", ""), "value": method["value"]}
+                                      if method.get("label") else method["value"]
+                                      for method in contact["methods"]
                                       if method["type"] == method_type], ensure_ascii=False))
         for column, value in enumerate(values, start=1):
             if isinstance(value, str) and (len(value) > 32767 or ILLEGAL_CHARACTERS_RE.search(value)):
@@ -132,12 +134,24 @@ def parse_workbook(content: bytes):
                     continue
                 try:
                     array = json.loads(value) if isinstance(value, str) else None
-                    if not isinstance(array, list) or any(not isinstance(item, str) or
-                            not 1 <= len(item.strip()) <= 2000 for item in array):
+                    if not isinstance(array, list):
                         raise ValueError
-                    methods.extend({"type": method_type, "label": "", "value": item} for item in array)
+                    parsed_methods = []
+                    for item in array:
+                        if isinstance(item, str):
+                            label, method_value = "", item
+                        elif isinstance(item, dict) and set(item) <= {"label", "value"}:
+                            label, method_value = item.get("label", ""), item.get("value")
+                        else:
+                            raise ValueError
+                        if (not isinstance(label, str) or len(label.strip()) > 100 or
+                                not isinstance(method_value, str) or
+                                not 1 <= len(method_value.strip()) <= 2000):
+                            raise ValueError
+                        parsed_methods.append({"type": method_type, "label": label, "value": method_value})
+                    methods.extend(parsed_methods)
                 except (ValueError, TypeError):
-                    row_errors.append(_error(row_number, HEADERS[index], "需要 JSON 字符串数组，元素为 1 至 2000 字的非空文本"))
+                    row_errors.append(_error(row_number, HEADERS[index], "需要 JSON 数组：非空文本或含 value、可选 label 的对象；value 为 1 至 2000 字，label 最多 100 字"))
             if len(methods) > 100:
                 row_errors.append(_error(row_number, "联系方式", "每位联系人最多 100 项联系方式"))
             if row_errors:

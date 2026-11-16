@@ -52,7 +52,7 @@ def test_round_trip_duplicates_unicode_values_and_leading_zero(client, contact):
     exported = client.get("/api/contacts/export").content
     workbook = load_workbook(BytesIO(exported))
     assert workbook.active.max_row == 3
-    assert json.loads(workbook.active["C2"].value)[0] == "0013800000000"
+    assert json.loads(workbook.active["C2"].value)[0] == {"label": "手机", "value": "0013800000000"}
     workbook.close()
     client.delete(f"/api/contacts/{first['id']}")
     client.delete(f"/api/contacts/{second['id']}")
@@ -60,9 +60,8 @@ def test_round_trip_duplicates_unicode_values_and_leading_zero(client, contact):
     items = client.get("/api/contacts").json()["items"]
     for item in items:
         assert item["name"] == "同名测试" and item["isFavorite"] is True
-        assert sorted((m["type"], m["value"]) for m in item["methods"]) == sorted(
-            (m["type"], m["value"]) for m in first["methods"])
-        assert all(m["label"] == "" for m in item["methods"])
+        assert sorted((m["type"], m["label"], m["value"]) for m in item["methods"]) == sorted(
+            (m["type"], m["label"], m["value"]) for m in first["methods"])
     assert upload(client, exported).json()["imported"] == 2
     assert client.get("/api/contacts").json()["total"] == 4
 
@@ -97,6 +96,10 @@ def test_collects_row_errors_and_writes_nothing(client):
     [123, 0, "[]", "[]", "[]", "[]"],
     ["测试", 0, "{ }", "[]", "[]", "[]"],
     ["测试", 0, '[null]', "[]", "[]", "[]"],
+    ["测试", 0, '[{"value":"00123","label":12}]', "[]", "[]", "[]"],
+    ["测试", 0, json.dumps([{"value": "00123", "label": "a" * 101}]), "[]", "[]", "[]"],
+    ["测试", 0, '[{"label":"手机"}]', "[]", "[]", "[]"],
+    ["测试", 0, '[{"value":"00123","extra":"ignored?"}]', "[]", "[]", "[]"],
     ["测试", 0, '"text"', "[]", "[]", "[]"],
     ["测试", 0, json.dumps(["a"] * 101), "[]", "[]", "[]"],
     ["测试", 0, "[]", "[]", "[]", "[]", "多余数据"],
