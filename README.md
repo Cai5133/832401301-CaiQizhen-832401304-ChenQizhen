@@ -40,7 +40,7 @@ pnpm dev
 
 先在 frontend 执行 `pnpm build`，后端会同时提供构建后的网页和 /api。单个地址即可访问完整系统，不需要启动 Vite 开发服务。
 
-阿里云或腾讯云 Ubuntu 服务器的安装、systemd 自启、Nginx、持久化与备份步骤见 [云部署说明](docs/deployment.md)。实际公网地址与验收结果需在服务器部署成功后填写，不能将本地地址称为云部署。
+已部署到腾讯云 Ubuntu 24.04：[在线通讯录](http://43.139.206.206/)。2026 年 11 月 16 日通过公网完整操作、后端服务重启与服务器整机重启验证，见 [云端验收](docs/cloud-report.md)。试用至北京时间 2026 年 12 月 16 日 15:19，手动续费、未开启自动续费；到期后可能停机或释放。安装、持久化及备份步骤见 [云部署说明](docs/deployment.md)。
 
 ## 验证
 
@@ -60,6 +60,6 @@ python scripts/smoke_http.py
 
 frontend 为页面、backend 为后端与测试、samples 为虚构 Excel 样例、deploy 为生产部署配置、docs 为规范及证据。使用 main、frontend、backend 分支，保留个人真实提交历史，不强推覆盖他人改动。
 
-后端 PR #1、前端及整合 PR #2 均已合并到 main，保留双方提交历史。最终公网部署、完整演示视频、两人的个人博客与实际 PSP、贡献比例和课程提交记录按真实进度补齐。博客技术草稿见 [backend-blog.md](docs/backend-blog.md)。
+后端 PR #1、前端及整合 PR #2 均已合并到 main，保留双方提交历史。公网部署、完整演示视频和关键页面截图已完成，见 [云端验收](docs/cloud-report.md)。两人的个人博客与实际 PSP、贡献比例和课程提交记录需本人按真实情况补齐。博客技术草稿见 [backend-blog.md](docs/backend-blog.md)。
 
 原帖要求 Fork，但未附明确课程上游地址；如有另行指定仓库，应按助教要求接入。项目在创建时为独立团队仓库，不声称已经 Fork 了未确认的课程上游。
